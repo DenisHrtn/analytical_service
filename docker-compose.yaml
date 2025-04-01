@@ -22,26 +22,26 @@ services:
   mongodb:
     image: mongo:8.0.5-rc2-noble
     container_name: mongodb
+    env_file:
+      - .env
     ports:
       - "27017:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
       - mongodb_data:/data/db
 
   mongo-express:
     image: mongo-express
     container_name: mongo-express
-    depends_on:
-      - mongodb
     restart: always
     ports:
-      - "8081:8081"
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
-      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
-      ME_CONFIG_MONGODB_URL: mongodb://admin:admin@mongodb:27017/?authSource=admin
+      - ${MONGODB_EXPRESS_PORT_LOCAL}:${MONGODB_EXPRESS_PORT}
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
     networks:
       - service_network
 
