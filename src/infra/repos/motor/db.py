@@ -5,11 +5,16 @@ from config import MongoDBConfig
 
 class MongoDBClient:
     def __init__(self, config: MongoDBConfig) -> None:
-        self._client = AsyncIOMotorClient(
-            f"mongodb://{config.mongo_user}:{config.mongo_password}"
-            f"@{config.mongo_host}:{config.mongo_port}/{config.mongo_db}"
-        )
-        self._db = self._client[config.mongo_db]
+        try:
+            self._client = AsyncIOMotorClient(
+                f"mongodb://{config.mongo_user}:{config.mongo_password}"
+                f"@{config.mongo_host}:{config.mongo_port}/{config.mongo_db}?authSource=admin"
+            )
+            self._db = self._client[config.mongo_db]
+            print(self._client)
+        except Exception as e:
+            print(f"Error connecting to MongoDB: {e}")
+            raise
 
     @property
     def client(self) -> AsyncIOMotorClient:

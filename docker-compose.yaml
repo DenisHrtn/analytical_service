@@ -20,17 +20,19 @@ services:
       - PYTHONPATH=/app/src
 
   mongodb:
-    image: mongo:8.0.5-rc2-noble
+    image: mongo:6.0
     container_name: mongodb
-    env_file:
-      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+      MONGO_INITDB_DATABASE: mydatabase
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
     volumes:
       - mongodb_data:/data/db
+      - ./mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - service_network
 
   mongo-express:
     image: mongo-express

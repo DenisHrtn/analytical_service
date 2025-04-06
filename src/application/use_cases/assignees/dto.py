@@ -4,23 +4,20 @@ from datetime import datetime
 
 @dataclass
 class CreateAssigneeDTO:
-    id: int
-    project_id: int
-    user_id: int
-    created_at: datetime | None
-    updated_at: datetime | None
+    project_id: str
+    user_id: str
 
 
 @dataclass
 class UpdateAssigneeDTO:
-    id: int
-    project_id: int
-    user_id: int
+    id: str
+    project_id: str
+    user_id: str
     updated_at: datetime | None
 
 
 @dataclass
 class DeleteAssigneeDTO:
-    id: int
-    project_id: int
-    user_id: int
+    id: str
+    project_id: str
+    user_id: str

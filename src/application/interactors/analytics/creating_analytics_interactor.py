@@ -10,16 +10,17 @@ from application.interfaces.mongo_repo import IMongoRepo
 class CreatingAnalyticsInteractor(CreatingAnalyticsUseCase):
     def __init__(self, mongodb_repo: IMongoRepo):
         super().__init__(mongodb_repo)
+        print(f"mongodb_repo type: {type(mongodb_repo)}")
 
     async def _get_user_projects(self, user_id: int):
-        return await self.mongodb_repo.find(
-            'projects',
-            {'user_id': str(user_id)}
-        )
+        print(f"Searching for projects with user_id: {user_id}")
+        projects = await self.mongodb_repo.find('projects', {'creator': str(user_id)})
+        print(f"Found {len(projects)} projects for user {user_id}")
+        return projects
 
     async def _get_task_status_stats(self, project_id: str):
         pipeline = [
-            {'$match': {'project_id': project_id}},
+            {'$match': {'project_id': str(project_id)}},
             {'$group': {'_id': '$status', 'count': {'$sum': 1}}},
             {
                 '$group': {
@@ -39,7 +40,7 @@ class CreatingAnalyticsInteractor(CreatingAnalyticsUseCase):
                                 'percentage': {
                                     "$multiply": [
                                         {"$divide": ["$$s.count", "$total"]},
-                                        100,
+                                        99,
                                     ]
                                 },
                             },
@@ -48,7 +49,7 @@ class CreatingAnalyticsInteractor(CreatingAnalyticsUseCase):
                 }
             },
         ]
-        result = await self.mongodb_repo.aggregate("tasks", pipeline)
+        result = await self.mongodb_repo.aggregate('tasks', pipeline)
         return result[0]['statuses'] if result else []
 
     async def _get_total_status_count(self, project_id: int):
@@ -66,9 +67,9 @@ class CreatingAnalyticsInteractor(CreatingAnalyticsUseCase):
 
         pipeline = [
             {'$match': {
-                'project_id': project_id,
-                'status': 'DONE',
-                "created_at": {"$gte": last_week}
+                'project_id': str(project_id),
+                'status': 'COMPLETED',
+                'created_at': {"$gte": last_week}
             }},
             {'$sort': {'created_at': -1}}
         ]
@@ -112,20 +113,21 @@ class CreatingAnalyticsInteractor(CreatingAnalyticsUseCase):
 
             tasks = await self.mongodb_repo.get_collection_count(
                 'tasks',
-                {'project_id': project_id}
+                {'project_id': str(project_id)}
             )
+            analytics['tasks'].append(
+                {'project_id': project_id, 'task_count': tasks}
+            )
+
             assignees = await self.mongodb_repo.get_collection_count(
                 'assignees',
                 {'project_id': project_id}
             )
-            statuses = await self._get_task_status_stats(project_id)
-
-            analytics['tasks'].append(
-                {'project_id': project_id, 'task_count': tasks}
-            )
             analytics['assignees'].append(
                 {'project_id': project_id, 'assignees': assignees}
             )
+
+            statuses = await self._get_task_status_stats(project_id)
             analytics['statuses'].append(
                 {'project_id': project_id, 'status': statuses}
             )
@@ -143,7 +145,7 @@ class CreatingAnalyticsInteractor(CreatingAnalyticsUseCase):
         for project in projects:
             project_id = project['id']
 
-            statuses = self._get_total_status_count(project_id)
+            statuses = await self._get_total_status_count(project_id)
 
             tasks_analytics['tasks_statues'].append(
                 {'project_id': project_id, 'status': statuses}

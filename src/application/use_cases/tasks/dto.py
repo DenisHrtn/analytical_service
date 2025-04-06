@@ -5,10 +5,10 @@ from typing import List
 
 @dataclass
 class CreateTaskDto:
-    id: int
-    project_id: int
+    id: str
+    project_id: str
     status: str
-    creator: int
+    creator: str
     assignees_ids: List[int]
     created_at: datetime
     updated_at: datetime
@@ -16,12 +16,12 @@ class CreateTaskDto:
 
 @dataclass
 class UpdateTaskDto:
-    id: int
-    project_id: int
+    id: str
+    project_id: str
     status: str
 
 
 @dataclass
 class DeleteTaskDto:
-    id: int
-    project_id: int
+    id: str
+    project_id: str

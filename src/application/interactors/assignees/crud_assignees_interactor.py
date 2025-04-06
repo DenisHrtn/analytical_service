@@ -15,16 +15,14 @@ class CRUDAssigneesInteractor(CRUDAssigneesUseCase):
         super().__init__(mongodb_repo)
 
     async def create(self, assignee: CreateAssigneeDTO):
-        existing_data = await self.mongodb_repo.get_by_id('assignees', assignee.id)
+        existing_data = await self.mongodb_repo.get_by_id('assignees', str(assignee.user_id))
         if existing_data:
             raise AssigneeAlreadyExistsException()
 
         document = {
-            'id': assignee.id,
-            'project_id': assignee.project_id,
-            'user_id': assignee.user_id,
-            'created_at': assignee.created_at,
-            'updated_at': assignee.updated_at
+            'id': str(assignee.user_id),
+            'project_id': str(assignee.project_id),
+            'user_id': str(assignee.user_id),
         }
 
         inserted_data = await self.mongodb_repo.insert('assignees', document)
